@@ -1,0 +1,12 @@
+{
+  "scenarios": [
+    {
+      "id": "1",
+      "label": "Scenario 1"
+    },
+    {
+      "id": "2",
+      "label": "Scenario 2"
+    }
+  ]
+}

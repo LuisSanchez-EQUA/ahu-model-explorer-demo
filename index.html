@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Evaporative humidifier and cooling dehumidification with return-air control</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">2026 simulation viewer</p>
+          <h1>Evaporative humidifier and cooling dehumidification with return-air control</h1>
+        </div>
+          <div class="header-actions"><button id="copy-script" class="copy-script" type="button">Copy IDA point-export script</button><div id="load-status" class="status" aria-live="polite">Loading bundled demo scenarios…</div></div>
+      </header>
+
+      <section class="upload-panel" aria-label="Simulation imports">
+        <div class="import-card">
+          <div><strong>Baseline scenario</strong><span>Choose a preloaded demo scenario</span></div>
+          <select id="baseline-scenario" aria-label="Baseline scenario"></select>
+          <button id="load-baseline" type="button">Load scenario</button>
+        </div>
+        <div class="import-card">
+          <div><strong>Variant scenario</strong><span>Optional overlay at the same simulation hour</span></div>
+          <select id="variant-scenario" aria-label="Variant scenario"></select>
+          <button id="load-variant" type="button">Load scenario</button>
+        </div>
+        <button id="refresh-scenarios" class="secondary refresh-scenarios" type="button">Reload demo scenarios</button>
+      </section>
+
+      <section id="explorer" hidden>
+        <section class="schematic-section" aria-labelledby="schematic-heading">
+          <div class="section-heading"><div><p class="eyebrow">AHU arrangement</p><h2 id="schematic-heading">Air-handling-unit schematic</h2></div></div>
+          <div class="schematic-wrap"><img src="ahu-schematic.png" alt="AHU schematic showing supply points 1 to 7 and return point 8" /></div>
+        </section>
+
+        <section class="workspace">
+          <section class="chart-section" aria-labelledby="chart-heading">
+            <div class="section-heading"><div><p class="eyebrow">Supply path · points 1–7</p><h2 id="chart-heading">Psychrometric process</h2></div><div class="chart-actions"><div id="mode-badge" class="mode-badge"></div><label class="compare-toggle"><input id="show-variant" type="checkbox" /> Overlay other process</label></div></div>
+            <div id="chart-wrap"><svg id="psychrometric-chart" role="img" aria-label="Animated psychrometric chart of the AHU supply-air process"></svg></div>
+            <div class="legend"><span id="active-legend"><i class="swatch baseline"></i>Supply process</span><span id="variant-legend" hidden><i class="swatch variant"></i>Comparison process</span><span><i class="swatch return-path"></i>Point 7 → 8 · room/return path</span></div>
+          </section>
+
+          <aside class="side-panel" aria-label="Current controls and sensing">
+            <section class="state-section">
+              <div class="state-heading"><p class="eyebrow">Air state at selected time</p><label for="side-display-scenario">Active scenario <select id="side-display-scenario" aria-label="Active scenario beside psychrometric chart"></select></label></div>
+              <table class="air-state-table"><thead><tr><th>Air</th><th>Dry-bulb<br />°C</th><th>RH<br />%</th><th>w<br />g/kg</th><th>ṁ<br />kg/s</th></tr></thead><tbody><tr><td>Outdoor · 1</td><td id="outdoor-t">—</td><td id="outdoor-rh">—</td><td id="outdoor-w">—</td><td id="outdoor-m">—</td></tr><tr><td>Supply · 7</td><td id="supply-t">—</td><td id="supply-rh">—</td><td id="supply-w">—</td><td id="supply-m">—</td></tr><tr><td>Return · 8</td><td id="return-t">—</td><td id="return-rh">—</td><td id="return-w">—</td><td id="return-m">—</td></tr></tbody></table>
+            </section>
+            <section class="control-section">
+              <p class="eyebrow">Controller requests</p>
+              <dl class="control-grid"><div><dt>RH target · %</dt><dd id="set-rh">—</dd></div><div><dt>Preheater HC1 · °C</dt><dd id="set-hc1">—</dd></div><div><dt>Cooling coil · °C</dt><dd id="set-cc">—</dd></div><div><dt>Reheat HC2 · °C</dt><dd id="set-hc2">—</dd></div></dl>
+            </section>
+            <section class="flow-section">
+              <p class="eyebrow">AHU volume flow · L/s</p>
+              <dl class="flow-grid"><div><dt>Supply</dt><dd id="flow-supply">—</dd></div><div><dt>Return</dt><dd id="flow-return">—</dd></div><div><dt>Net supply</dt><dd id="flow-net">—</dd></div></dl>
+            </section>
+            <section>
+              <p class="eyebrow">Physical stage response</p>
+              <table class="response-table"><thead><tr><th>Stage</th><th>ΔT °C</th><th>Δw g/kg</th></tr></thead><tbody id="stage-list"></tbody></table>
+            </section>
+          </aside>
+        </section>
+
+        <section class="timeline-section" aria-labelledby="timeline-heading">
+          <div class="section-heading"><div><p class="eyebrow">Annual behaviour</p><h2 id="timeline-heading">Outdoor, supply and return conditions</h2></div><div class="scenario-view"><label for="display-scenario">Active scenario</label><select id="display-scenario" aria-label="Active scenario for annual views"></select></div></div>
+          <section class="period-controls" aria-label="Annual period filter"><span>Show period</span><label for="period-from">From</label><input id="period-from" type="datetime-local" min="2026-01-01T00:00" max="2027-01-01T00:00" step="60" /><label for="period-to">To</label><input id="period-to" type="datetime-local" min="2026-01-01T00:00" max="2027-01-01T00:00" step="60" /><button id="apply-period" class="secondary" type="button">Apply</button><button id="reset-period" class="secondary" type="button">All simulated time</button></section>
+          <section class="controlbar" aria-label="Animation controls">
+            <button id="play" type="button" aria-pressed="false">Play</button>
+            <button id="previous" class="secondary" type="button">Previous</button>
+            <button id="next" class="secondary" type="button">Next</button>
+            <div class="time-selector"><label for="time-jump">Simulation time</label><div><input id="time-jump" type="datetime-local" min="2026-01-01T00:00" max="2027-01-01T00:00" step="60" /><button id="go-time" class="secondary" type="button">Go</button></div></div>
+            <label for="closeup-hours">Close-up</label>
+            <select id="closeup-hours"><option value="6">6 h</option><option value="12">12 h</option><option value="24" selected>24 h</option><option value="48">48 h</option><option value="168">7 days</option></select>
+            <label for="playback-speed">Speed</label>
+            <select id="playback-speed"><option value="1">1×</option><option value="3" selected>3×</option><option value="8">8×</option></select>
+          </section>
+          <div class="annual-layout">
+            <div class="annual-overview">
+              <div class="timeline-slider-row"><label for="time-slider">Simulation time</label><input id="time-slider" type="range" min="0" max="8760" step="0.01" value="0" /></div>
+              <section class="annual-chart"><h3 id="temperature-overview-title">Temperatures · full year</h3><svg id="temperature-timeline" role="img" aria-label="Annual outdoor, supply and return temperatures"></svg><div class="chart-legend"><span><i class="swatch outdoor"></i>Outdoor · point 1</span><span><i class="swatch supply"></i>Supply · point 7</span><span><i class="swatch return"></i>Return · point 8</span></div></section>
+              <section class="annual-chart"><h3 id="humidity-overview-title">Relative humidities · full year</h3><svg id="humidity-timeline" role="img" aria-label="Annual outdoor, supply and return relative humidity"></svg><div class="chart-legend"><span><i class="swatch outdoor"></i>Outdoor · point 1</span><span><i class="swatch supply"></i>Supply · point 7</span><span><i class="swatch return"></i>Return · point 8</span></div></section>
+              <section class="annual-chart"><h3 id="massflow-overview-title">Air mass flow · full year</h3><svg id="massflow-timeline" role="img" aria-label="Annual air mass flow at outdoor, supply, return and exhaust points"></svg><div class="chart-legend"><span><i class="swatch outdoor"></i>Outdoor · point 1</span><span><i class="swatch supply"></i>Supply · point 7</span><span><i class="swatch return"></i>Return · point 8</span><span><i class="swatch exhaust"></i>Exhaust · point 9</span></div></section>
+            </div>
+            <aside class="closeups" aria-label="Selected 24-hour close-up">
+              <div><p class="eyebrow">Selected window</p><h3 id="closeup-title">Close-up · 24 h</h3></div>
+              <section class="annual-chart"><h3>Temperatures · °C</h3><svg id="temperature-closeup" role="img" aria-label="Selected 24-hour temperature close-up"></svg><div class="chart-legend compact-legend" aria-label="Temperature series: outdoor point 1, supply point 7, return point 8"><span><i class="swatch outdoor"></i>1</span><span><i class="swatch supply"></i>7</span><span><i class="swatch return"></i>8</span></div></section>
+              <section class="annual-chart"><h3>Relative humidities · %</h3><svg id="humidity-closeup" role="img" aria-label="Selected 24-hour humidity close-up"></svg><div class="chart-legend compact-legend" aria-label="Humidity series: outdoor point 1, supply point 7, return point 8"><span><i class="swatch outdoor"></i>1</span><span><i class="swatch supply"></i>7</span><span><i class="swatch return"></i>8</span></div></section>
+              <section class="annual-chart"><h3>Air mass flow · kg/s</h3><svg id="massflow-closeup" role="img" aria-label="Selected air mass flow close-up"></svg><div class="chart-legend compact-legend" aria-label="Mass-flow series: outdoor point 1, supply point 7, return point 8, exhaust point 9"><span><i class="swatch outdoor"></i>1</span><span><i class="swatch supply"></i>7</span><span><i class="swatch return"></i>8</span><span><i class="swatch exhaust"></i>9</span></div></section>
+            </aside>
+          </div>
+          <section class="operation-analysis" aria-labelledby="operation-analysis-heading">
+            <div><p class="eyebrow">Scenario analysis</p><h3 id="operation-analysis-heading">Derived operating modes</h3><p class="analysis-note">Select a row to highlight every occurrence in the annual charts.</p></div>
+            <div class="mode-summary-wrap"><table class="mode-summary-table"><thead><tr><th>Operation mode</th><th>Time</th><th>Share</th></tr></thead><tbody id="mode-summary"></tbody></table><button id="clear-mode-highlight" class="secondary" type="button" hidden>Clear highlight</button></div>
+          </section>
+        </section>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
