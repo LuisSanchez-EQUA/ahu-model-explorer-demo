@@ -42,6 +42,7 @@ function rhFromTW(t, w) {
   const pw = (w * pressure) / (0.621945 + w);
   return Math.max(0, Math.min(100, 100 * pw / ps));
 }
+function enthalpyFromTW(t, w) { return 1.006 * t + w * (2501 + 1.86 * t); }
 function scale(value, domain, range) { return range[0] + ((value - domain[0]) / (domain[1] - domain[0])) * (range[1] - range[0]); }
 function current(data) {
   if (data === state.baseline && state.exact.baseline) return state.exact.baseline;
@@ -105,6 +106,9 @@ function renderModeSummary() {
 
 function renderChart() {
   const data = activeData(); if (!data) return;
+  const isMollier = $("chart-type").value === "mollier";
+  $("chart-heading").textContent = isMollier ? "Mollier process" : "Psychrometric process";
+  if (isMollier) return renderMollierChart(data);
   const chart = $("psychrometric-chart"); chart.replaceChildren();
   const width = Math.max(320, chart.clientWidth || 760), height = Math.max(380, chart.clientHeight || 490);
   chart.setAttribute("viewBox", `0 0 ${width} ${height}`);
@@ -140,6 +144,62 @@ function renderChart() {
   chart.append(svg("text", { x: 14, y: height / 2, class: "chart-title", transform: `rotate(-90 14 ${height / 2})`, "text-anchor": "middle" }, "Humidity ratio (g/kg dry air)"));
   drawProcess(chart, current(data), x, y, state.active, true, true);
   if (hasOverlay()) drawProcess(chart, current(otherData()), x, y, otherKind(), false, false);
+}
+function renderMollierChart(data) {
+  const chart = $("psychrometric-chart"); chart.replaceChildren();
+  const width = Math.max(320, chart.clientWidth || 760), height = Math.max(380, chart.clientHeight || 490);
+  chart.setAttribute("viewBox", "0 0 " + width + " " + height);
+  chart.setAttribute("aria-label", "Animated Mollier h–x chart of the AHU supply-air process");
+  const margin = { top: 24, right: 20, bottom: 45, left: 56 };
+  const frames = [current(data), ...(hasOverlay() ? [current(otherData())] : [])];
+  const states = frames.flatMap((frame) => [...frame.t.map((t, index) => ({ t, w: frame.w[index] })), { t: frame.return[0], w: frame.return[1] }]);
+  const humidities = states.map(({ w }) => w * 1000);
+  const enthalpies = states.map(({ t, w }) => enthalpyFromTW(t, w));
+  const xDomain = [0, Math.max(18, Math.ceil(Math.max(...humidities) + 2))];
+  const yDomain = [Math.min(0, Math.floor(Math.min(...enthalpies) / 5) * 5), Math.max(60, Math.ceil(Math.max(...enthalpies) / 5) * 5)];
+  const x = (value) => scale(value, xDomain, [margin.left, width - margin.right]);
+  const y = (value) => scale(value, yDomain, [height - margin.bottom, margin.top]);
+  const project = (t, w) => [x(w * 1000), y(enthalpyFromTW(t, w))];
+
+  for (let value = 0; value <= xDomain[1]; value += 2) {
+    chart.append(svg("line", { x1: x(value), y1: margin.top, x2: x(value), y2: height - margin.bottom, class: "grid" }));
+    chart.append(svg("text", { x: x(value), y: height - 24, class: "axis", "text-anchor": "middle" }, value));
+  }
+  for (let value = Math.ceil(yDomain[0] / 10) * 10; value <= yDomain[1]; value += 10) {
+    chart.append(svg("line", { x1: margin.left, y1: y(value), x2: width - margin.right, y2: y(value), class: "grid" }));
+    chart.append(svg("text", { x: margin.left - 8, y: y(value) + 4, class: "axis", "text-anchor": "end" }, value));
+  }
+  [1, .8, .6, .4, .2].forEach((fraction) => {
+    const points = [];
+    for (let temp = -30; temp <= 60; temp += .4) {
+      const ps = 610.94 * Math.exp((17.625 * temp) / (temp + 243.04));
+      const w = 0.621945 * fraction * ps / (pressure - fraction * ps);
+      const h = enthalpyFromTW(temp, w);
+      if (w * 1000 >= xDomain[0] && w * 1000 <= xDomain[1] && h >= yDomain[0] && h <= yDomain[1]) {
+        const [pointX, pointY] = project(temp, w); points.push({ x: pointX, y: pointY });
+      }
+    }
+    chart.append(svg("path", { d: "M" + points.map((point) => point.x + "," + point.y).join(" L"), fill: "none", stroke: "#bccdcd", "stroke-width": fraction === 1 ? 1.5 : 1 }));
+    const labelPoint = points[points.length - 1];
+    if (labelPoint) chart.append(svg("text", { x: labelPoint.x - 4, y: labelPoint.y - 5, class: "rh-label", "text-anchor": "end" }, Math.round(fraction * 100) + "% RH"));
+  });
+  chart.append(svg("rect", { x: margin.left, y: margin.top, width: width - margin.left - margin.right, height: height - margin.top - margin.bottom, fill: "none", stroke: "#aebfc0" }));
+  chart.append(svg("text", { x: (margin.left + width - margin.right) / 2, y: height - 5, class: "chart-title", "text-anchor": "middle" }, "Humidity ratio, x (g/kg dry air)"));
+  chart.append(svg("text", { x: 14, y: height / 2, class: "chart-title", transform: "rotate(-90 14 " + height / 2 + ")", "text-anchor": "middle" }, "Enthalpy, h (kJ/kg dry air)"));
+  drawMollierProcess(chart, current(data), project, state.active, true, true);
+  if (hasOverlay()) drawMollierProcess(chart, current(otherData()), project, otherKind(), false, false);
+}
+function drawMollierProcess(chart, frame, project, scenario, active, labels) {
+  const supplyPoints = frame.t.map((temp, index) => project(temp, frame.w[index]));
+  const points = [...supplyPoints, project(frame.return[0], frame.return[1])];
+  const scenarioClass = scenario === "baseline" ? "scenario-one" : "scenario-two";
+  const stateClass = active ? "active-process" : "comparison-process";
+  chart.append(svg("polyline", { points: supplyPoints.map((point) => point.join(",")).join(" "), class: scenarioClass + "-path process-line " + stateClass }));
+  chart.append(svg("line", { x1: supplyPoints[6][0], y1: supplyPoints[6][1], x2: points[7][0], y2: points[7][1], class: scenarioClass + "-return return-line " + stateClass }));
+  points.forEach((point, index) => {
+    chart.append(svg("circle", { cx: point[0], cy: point[1], r: 5.5, class: "point " + scenarioClass + "-point " + stateClass }));
+    if (labels) chart.append(svg("text", { x: point[0] + 8, y: point[1] - 8, class: "point-label" }, index + 1));
+  });
 }
 function drawProcess(chart, frame, x, y, scenario, active, labels) {
   const supplyPoints = frame.t.map((temp, index) => [x(temp), y(frame.w[index] * 1000)]);
@@ -261,7 +321,7 @@ function switchActiveScenario(kind) {
   render();
 }
 
-$("load-baseline").addEventListener("click",()=>loadScenario("baseline")); $("load-variant").addEventListener("click",()=>loadScenario("variant")); $("refresh-scenarios").addEventListener("click",()=>refreshScenarios(false)); $("copy-script").addEventListener("click",copyScript); $("display-scenario").addEventListener("change",(event)=>switchActiveScenario(event.target.value)); $("side-display-scenario").addEventListener("change",(event)=>switchActiveScenario(event.target.value)); $("show-variant").addEventListener("change",render); $("time-slider").addEventListener("input",(event)=>{clearExactSelection();state.hour=+event.target.value;state.frame=frameIndexAt(state.hour);render();}); $("go-time").addEventListener("click",jumpToDateTime); $("apply-period").addEventListener("click",applyPeriod); $("reset-period").addEventListener("click",resetPeriod); $("clear-mode-highlight").addEventListener("click",()=>{state.modeFocus=null;render();}); $("closeup-hours").addEventListener("change",render); $("play").addEventListener("click",togglePlay); $("previous").addEventListener("click",()=>step(-1)); $("next").addEventListener("click",()=>step(1)); window.addEventListener("resize",()=>{ if(activeData()) render(); });
+$("load-baseline").addEventListener("click",()=>loadScenario("baseline")); $("load-variant").addEventListener("click",()=>loadScenario("variant")); $("refresh-scenarios").addEventListener("click",()=>refreshScenarios(false)); $("copy-script").addEventListener("click",copyScript); $("display-scenario").addEventListener("change",(event)=>switchActiveScenario(event.target.value)); $("side-display-scenario").addEventListener("change",(event)=>switchActiveScenario(event.target.value)); $("show-variant").addEventListener("change",render); $("chart-type").addEventListener("change",render); $("time-slider").addEventListener("input",(event)=>{clearExactSelection();state.hour=+event.target.value;state.frame=frameIndexAt(state.hour);render();}); $("go-time").addEventListener("click",jumpToDateTime); $("apply-period").addEventListener("click",applyPeriod); $("reset-period").addEventListener("click",resetPeriod); $("clear-mode-highlight").addEventListener("click",()=>{state.modeFocus=null;render();}); $("closeup-hours").addEventListener("change",render); $("play").addEventListener("click",togglePlay); $("previous").addEventListener("click",()=>step(-1)); $("next").addEventListener("click",()=>step(1)); window.addEventListener("resize",()=>{ if(activeData()) render(); });
 
 // This prototype is fully static: the approved demo scenarios are prebuilt as
 // JSON assets and are never uploaded or changed by a browser user.

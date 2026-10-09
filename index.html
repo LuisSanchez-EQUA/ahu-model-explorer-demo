@@ -38,8 +38,8 @@
 
         <section class="workspace">
           <section class="chart-section" aria-labelledby="chart-heading">
-            <div class="section-heading"><div><p class="eyebrow">Supply path · points 1–7</p><h2 id="chart-heading">Psychrometric process</h2></div><div class="chart-actions"><div id="mode-badge" class="mode-badge"></div><label class="compare-toggle"><input id="show-variant" type="checkbox" /> Overlay other process</label></div></div>
-            <div id="chart-wrap"><svg id="psychrometric-chart" role="img" aria-label="Animated psychrometric chart of the AHU supply-air process"></svg></div>
+            <div class="section-heading"><div><p class="eyebrow">Supply path · points 1–7</p><h2 id="chart-heading">Psychrometric process</h2></div><div class="chart-actions"><label for="chart-type">Diagram <select id="chart-type" aria-label="Air-process diagram type"><option value="psychrometric">Psychrometric T–x</option><option value="mollier">Mollier h–x</option></select></label><div id="mode-badge" class="mode-badge"></div><label class="compare-toggle"><input id="show-variant" type="checkbox" /> Overlay other process</label></div></div>
+            <div id="chart-wrap"><svg id="psychrometric-chart" role="img" aria-label="Animated psychrometric T–x chart of the AHU supply-air process"></svg></div>
             <div class="legend"><span id="active-legend"><i class="swatch baseline"></i>Supply process</span><span id="variant-legend" hidden><i class="swatch variant"></i>Comparison process</span><span><i class="swatch return-path"></i>Point 7 → 8 · room/return path</span></div>
           </section>
 
