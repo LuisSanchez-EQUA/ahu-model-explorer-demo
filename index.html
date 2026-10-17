@@ -36,6 +36,18 @@
           <div class="schematic-wrap"><img src="ahu-schematic.png" alt="AHU schematic showing supply points 1 to 7 and return point 8" /></div>
         </section>
 
+        <section class="mobile-time-dock" aria-label="Simulation time controls">
+          <div class="mobile-time-dock__header">
+            <div><p class="eyebrow">Selected simulation time</p><strong id="mobile-time-label">Loading…</strong></div>
+            <div class="mobile-step-buttons">
+              <button id="mobile-previous" class="secondary" type="button" aria-label="Previous simulation timestep">‹</button>
+              <button id="mobile-play" type="button" aria-pressed="false">Play</button>
+              <button id="mobile-next" class="secondary" type="button" aria-label="Next simulation timestep">›</button>
+            </div>
+          </div>
+          <input id="mobile-time-slider" type="range" min="0" max="8760" step="0.01" value="0" aria-label="Simulation time" />
+        </section>
+
         <section class="workspace">
           <section class="chart-section" aria-labelledby="chart-heading">
             <div class="section-heading"><div><p class="eyebrow">Supply path · points 1–7</p><h2 id="chart-heading">Psychrometric process</h2></div><div class="chart-actions"><label for="chart-type">Diagram <select id="chart-type" aria-label="Air-process diagram type"><option value="psychrometric">Psychrometric T–x</option><option value="mollier">Mollier h–x</option></select></label><div id="mode-badge" class="mode-badge"></div><label class="compare-toggle"><input id="show-variant" type="checkbox" /> Overlay other process</label></div></div>

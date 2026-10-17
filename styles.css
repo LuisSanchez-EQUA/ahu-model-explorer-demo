@@ -73,4 +73,57 @@ select, input[type=datetime-local] { border: 1px solid var(--line); border-radiu
 .mode-highlight { fill: #fff066; opacity: .46; pointer-events: none; }
 
 @media (max-width: 1050px) { .upload-panel { flex-direction: column; }.workspace { grid-template-columns: 1fr; }.side-panel { grid-template-columns: repeat(3, 1fr); }.side-panel section + section { border-top: 0; border-left: 1px solid var(--line); padding: 0 0 0 1rem; }.operation-analysis { grid-template-columns: 1fr; }.annual-layout { grid-template-columns: 1fr; }.closeups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 1rem 0 0; border-left: 0; border-top: 1px solid var(--line); }.closeups > div { grid-column: 1 / -1; }.closeups .annual-chart { margin-top: 0; }.refresh-scenarios { align-self: flex-start; } }
+
+/* The desktop layout remains unchanged.  On phones, controls are grouped
+   around the time selection and the four primary views get the full width. */
+.mobile-time-dock { display: none; }
+
+@media (max-width: 720px) {
+  .app-shell { width: min(100% - 1rem, 720px); padding: 1rem 0 5.75rem; }
+  .topbar, .section-heading { align-items: flex-start; flex-direction: column; }
+  .header-actions { width: 100%; justify-content: space-between; }
+  .status { max-width: 58%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .upload-panel { gap: .65rem; }
+  .import-card { grid-template-columns: 1fr; gap: .55rem; padding: .8rem; }
+  .import-card button, .refresh-scenarios { min-height: 44px; width: 100%; }
+  .schematic-section { padding: .75rem; }
+
+  .mobile-time-dock { display: grid; position: sticky; z-index: 5; bottom: .5rem; gap: .7rem; margin-top: .75rem; padding: .75rem; background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 28px rgba(22,48,66,.18); backdrop-filter: blur(8px); }
+  .mobile-time-dock__header { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+  .mobile-time-dock strong { display: block; margin-top: .08rem; font-size: .94rem; font-variant-numeric: tabular-nums; }
+  .mobile-step-buttons { display: grid; grid-template-columns: 44px minmax(70px, 1fr) 44px; gap: .35rem; }
+  .mobile-step-buttons button { min-height: 44px; padding: .45rem .65rem; }
+  #mobile-time-slider { width: 100%; min-height: 30px; accent-color: var(--baseline); }
+
+  .workspace { display: block; margin-top: .75rem; }
+  .chart-section, .side-panel, .timeline-section { padding: .8rem; border-radius: 9px; }
+  .chart-actions, .scenario-view { width: 100%; justify-content: flex-start; }
+  .chart-actions > label:first-child { flex: 1; }
+  .chart-actions select { max-width: 100%; }
+  #chart-wrap, #psychrometric-chart { min-height: 360px; height: 360px; }
+  .side-panel { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin-top: .75rem; }
+  .side-panel section { min-width: 0; padding: .65rem; background: #f7faf9; border: 1px solid var(--line); border-radius: 7px; }
+  .side-panel section + section { padding: .65rem; border: 1px solid var(--line); }
+  .side-panel section:first-child, .side-panel section:last-child { grid-column: 1 / -1; }
+  .state-heading { align-items: flex-start; flex-direction: column; }
+  .air-state-table { font-size: .7rem; }
+  .control-grid, .flow-grid { grid-template-columns: 1fr; gap: .35rem; }
+
+  .timeline-section { margin-top: .75rem; }
+  .period-controls { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
+  .period-controls > span { grid-column: 1 / -1; }
+  .period-controls label { align-self: center; }
+  .period-controls input { min-width: 0; max-width: none; width: 100%; }
+  .period-controls button { min-height: 42px; }
+  .controlbar { display: none; }
+  .timeline-slider-row { display: none; }
+  .annual-layout { display: block; }
+  .annual-chart { margin-top: 1.25rem; }
+  .annual-chart h3 { font-size: .88rem; }
+  .annual-chart svg { height: 180px; }
+  .closeups { display: none; }
+  .chart-legend { gap: .45rem .75rem; font-size: .72rem; }
+  .operation-analysis { grid-template-columns: 1fr; gap: .75rem; }
+  .mode-summary-wrap { overflow-x: auto; }
+}
 @media (max-width: 720px) { .app-shell { width: min(100% - 1rem, 1420px); padding-top: 1rem; }.topbar { align-items: flex-start; flex-direction: column; }.header-actions { align-items: flex-start; flex-direction: column; }.import-card { grid-template-columns: 1fr; }.side-panel { grid-template-columns: 1fr; }.side-panel section + section { border-left: 0; border-top: 1px solid var(--line); padding: .9rem 0 0; } .mode-summary-wrap { flex-direction: column; } #chart-wrap, #psychrometric-chart { min-height: 390px; height: 390px; }.status { border-radius: 8px; }.time-selector { width: 100%; margin-left: 0; }.time-selector input { min-width: 0; width: 100%; }.period-controls { align-items: flex-start; flex-direction: column; }.period-controls input { max-width: none; width: 100%; }.scenario-view, .chart-actions { align-items: flex-start; flex-wrap: wrap; justify-content: flex-start; } }
